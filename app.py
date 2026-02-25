@@ -20,7 +20,7 @@ app = Flask(__name__)
 _default_origins = [
     "http://localhost:4200",
     "http://127.0.0.1:4200",
-   "https://device-xi.vercel.app/"
+   "https://device-xi.vercel.app"
 
 ]
 _extra_origins = os.getenv("CORS_ORIGINS", "").strip()
@@ -57,7 +57,7 @@ app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 # Cookie only sent over HTTPS when Secure=True. Set JWT_COOKIE_SECURE=0 if API is HTTP (e.g. behind reverse proxy that does SSL).
 # app.config["JWT_COOKIE_SECURE"] = os.getenv("JWT_COOKIE_SECURE", "true").lower() in ("1", "true", "yes")
 app.config["JWT_COOKIE_SECURE"] = True
-app.config["JWT_COOKIE_SAMESITE"] = None
+app.config["JWT_COOKIE_SAMESITE"] = "None"
 app.config["JWT_COOKIE_CSRF_PROTECT"] = True
 
 api = Api(app, spec_kwargs={
