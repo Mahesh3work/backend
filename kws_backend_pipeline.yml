@@ -1,0 +1,64 @@
+trigger: none
+  # branches:
+  #   include:
+  #     - master   # run only on master branch
+
+variables:
+- group: prod_deploy   # <-- link your variable group here
+
+stages:
+  - stage: Build
+    displayName: Build and Push Docker Image
+    jobs:
+      - job: BuildAndPush
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          - task: DockerInstaller@0
+            inputs:
+              dockerVersion: '29.0.0'
+          
+          - script: |
+              echo "Docker login..."
+              echo $(DOCKERHUB_PASSWORD) | docker login -u $(DOCKERHUB_USERNAME) --password-stdin
+              echo "Building image..."
+              docker build -t kalpdev/kws_backend:$(Build.SourceVersion) .
+              docker push kalpdev/kws_backend:$(Build.SourceVersion)
+              docker tag kalpdev/kws_backend:$(Build.SourceVersion) kalpdev/kws_backend:latest
+              docker push kalpdev/kws_backend:latest
+            displayName: Build & Push Docker image
+
+  - stage: Deploy
+    displayName: Deploy to VPS
+    dependsOn: Build
+    jobs:
+      - job: DeployToVPS
+        pool:
+          vmImage: 'ubuntu-latest'
+        steps:
+          # 1 Download the private key from Azure DevOps Secure Files
+          - task: DownloadSecureFile@1
+            name: sshKey
+            inputs:
+              secureFile: azure_devops_key   # the name of your uploaded private key
+
+          # 2 Set correct permissions on the key
+          - script: |
+              chmod 600 $(sshKey.secureFilePath)
+            displayName: "Set permissions on SSH key"
+
+          # 3 Test SSH connection
+          - script: |
+              ssh -i $(sshKey.secureFilePath) -o StrictHostKeyChecking=no $(SSH_USER)@$(SERVER_IP) "echo '✅ Connected successfully'"
+            displayName: "Test SSH connection"
+
+          # 4 Deploy via SSH
+          - script: |
+              ssh -i $(sshKey.secureFilePath) -o StrictHostKeyChecking=no $(SSH_USER)@$(SERVER_IP) "
+                set -e
+                echo '$(DOCKERHUB_PASSWORD)' | docker login -u '$(DOCKERHUB_USERNAME)' --password-stdin
+                cd $(DEPLOY_PATH)
+                chmod +x kws_backend.sh 
+                ./kws_backend.sh 'kalpdev' '$(Build.SourceVersion)'
+              "
+            displayName: "Deploy via SSH"

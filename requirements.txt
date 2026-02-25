@@ -1,0 +1,12 @@
+flask
+flask-cors
+flask-smorest
+flask-jwt-extended
+passlib
+alembic
+mysql-connector-python
+python-dotenv
+gunicorn
+waitress
+requests
+psycopg2
