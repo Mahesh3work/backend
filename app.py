@@ -20,7 +20,8 @@ app = Flask(__name__)
 _default_origins = [
     "http://localhost:4200",
     "http://127.0.0.1:4200",
-   "https://device-xi.vercel.app"
+   "https://device-xi.vercel.app",
+   "https://frontend-dev-u3f3.onrender.com"
 
 ]
 _extra_origins = os.getenv("CORS_ORIGINS", "").strip()
@@ -58,7 +59,7 @@ app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 # app.config["JWT_COOKIE_SECURE"] = os.getenv("JWT_COOKIE_SECURE", "true").lower() in ("1", "true", "yes")
 app.config["JWT_COOKIE_SECURE"] = True
 app.config["JWT_COOKIE_SAMESITE"] = "None"
-app.config["JWT_COOKIE_CSRF_PROTECT"] = True
+app.config["JWT_COOKIE_CSRF_PROTECT"] = False
 
 api = Api(app, spec_kwargs={
     "components": {
