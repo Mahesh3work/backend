@@ -15,6 +15,8 @@ from resources.roles import blp as rolesBlueprint
 from resources.client import blp as clientBlueprint
 
 app = Flask(__name__)
+from werkzeug.middleware.proxy_fix import ProxyFix
+app.wsgi_app = ProxyFix(app.wsgi_app, x_proto=1, x_host=1)
 
 # CORS: allow extra origins from env (comma-separated). Required for production frontend URL.
 _default_origins = [
